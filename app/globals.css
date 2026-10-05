@@ -1,26 +1,333 @@
 @import "tailwindcss";
 
+@theme {
+  --color-offroad-green: #023A22;
+  --color-soft-sage: #ABC8A3;
+  --color-ocean-blue: #28729F;
+  --color-golden-sand: #F0E295;
+  
+  --font-display: var(--font-display, "Changa", sans-serif);
+  --font-body: var(--font-body, "IBM Plex Sans Arabic", sans-serif);
+  --font-digits: var(--font-digits, "Unbounded", sans-serif);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --offroad-green: #023A22;
+  --soft-sage: #ABC8A3;
+  --ocean-blue: #28729F;
+  --golden-sand: #F0E295;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* التنسيق العام والاتجاه من اليمين لليسار */
+html {
+  background-color: #023A22;
+  color: #ABC8A3;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #023A22;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+}
+
+::selection {
+  background-color: #F0E295;
+  color: #023A22;
+}
+
+/* طبقة الحبيبات السينمائية Film Grain */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
+
+/* شبكة الجزيئات الهندسية الفاتحة */
+.molecule-lattice {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.06;
+  background-image: radial-gradient(#ABC8A3 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* لوح زجاجي مصنفر فاخر لحاضنة الشعار */
+.glass-panel {
+  background: radial-gradient(130% 130% at 50% 0%, rgba(171, 200, 163, 0.12) 0%, rgba(2, 42, 24, 0.75) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(171, 200, 163, 0.35);
+  box-shadow: 
+    0 20px 45px -12px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(240, 226, 149, 0.35),
+    inset 0 -1px 0 rgba(171, 200, 163, 0.2),
+    inset 0 0 25px rgba(171, 200, 163, 0.08);
+}
+
+/* بطاقة العداد المعملية الراقية */
+.countdown-container {
+  background: radial-gradient(120% 120% at 50% 0%, rgba(171, 200, 163, 0.08) 0%, rgba(2, 42, 24, 0.7) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(171, 200, 163, 0.25);
+  box-shadow: 
+    0 14px 35px -8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(240, 226, 149, 0.2),
+    inset 0 0 18px rgba(171, 200, 163, 0.04);
+}
+
+/* تدرج الأرقام الذهبي المعدني الفاخر */
+.golden-numeral-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8C5 28%, #F0E295 72%, #CDBB60 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(240, 226, 149, 0.3));
+}
+
+/* خط الأرقام الإنجليزية الفخم */
+.font-digits {
+  font-family: var(--font-digits), "Unbounded", system-ui, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+/* توهج تنفسي ذهبي خافت */
+@keyframes goldenBreathing {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(240, 226, 149, 0.12)) drop-shadow(0 0 25px rgba(240, 226, 149, 0.05));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(240, 226, 149, 0.28)) drop-shadow(0 0 45px rgba(240, 226, 149, 0.12));
+  }
+}
+
+.breathing-glow {
+  animation: goldenBreathing 6s ease-in-out infinite;
+}
+
+/* تصاعد الفقاعات الكيميائية الصغيرة */
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-90px) translateX(var(--drift-x, 8px)) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.animate-bubble {
+  animation: bubbleFloat var(--bubble-duration, 4s) cubic-bezier(0.35, 0, 0.25, 1) infinite;
+  animation-delay: var(--bubble-delay, 0s);
+}
+
+/* تموجات الدخان والضباب البطيئة */
+@keyframes smokeDriftOne {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(40px, -25px) scale(1.12) rotate(4deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes smokeDriftTwo {
+  0% {
+    transform: translate(0, 0) scale(1.1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-35px, 30px) scale(0.95) rotate(-5deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1.1) rotate(0deg);
+  }
+}
+
+.smoke-cloud-1 {
+  animation: smokeDriftOne 22s ease-in-out infinite alternate;
+}
+
+.smoke-cloud-2 {
+  animation: smokeDriftTwo 28s ease-in-out infinite alternate;
+}
+
+/* نبض الثواني الحي */
+@keyframes liveDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.4;
+  }
+}
+
+.animate-live-dot {
+  animation: liveDotPulse 1.2s ease-in-out infinite;
+}
+
+/* دوران وانجراف الجزيئات الكيميائية في عمق الخلفية */
+@keyframes chemMoleculeDrift1 {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate(25px, -35px) rotate(120deg) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, -55px) rotate(240deg) scale(0.96);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes chemMoleculeDrift2 {
+  0% {
+    transform: translate(0px, 0px) rotate(360deg) scale(0.95);
+  }
+  33% {
+    transform: translate(-30px, 25px) rotate(240deg) scale(1.04);
+  }
+  66% {
+    transform: translate(25px, 40px) rotate(120deg) scale(0.98);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg) scale(0.95);
+  }
+}
+
+@keyframes chemMoleculeDrift3 {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  50% {
+    transform: translate(35px, -25px) rotate(-180deg);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(-360deg);
+  }
+}
+
+/* دوران المدارات الذرية والإلكترونات */
+@keyframes atomicOrbitalSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes atomicOrbitalSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* سريان الطاقة والتفاعل عبر الروابط الكيميائية */
+@keyframes chemicalBondFlow {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* تصاعد الفقاعات الكيميائية على امتداد الشاشة بأكملها */
+@keyframes screenEffervescence {
+  0% {
+    transform: translateY(105vh) translateX(0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(var(--drift-x, 25px)) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.animate-molecule-1 {
+  animation: chemMoleculeDrift1 var(--duration, 42s) ease-in-out infinite;
+}
+
+.animate-molecule-2 {
+  animation: chemMoleculeDrift2 var(--duration, 38s) ease-in-out infinite;
+}
+
+.animate-molecule-3 {
+  animation: chemMoleculeDrift3 var(--duration, 48s) ease-in-out infinite;
+}
+
+.animate-orbital {
+  animation: atomicOrbitalSpin 26s linear infinite;
+}
+
+.animate-orbital-rev {
+  animation: atomicOrbitalSpinReverse 20s linear infinite;
+}
+
+.animate-bond-flow {
+  stroke-dasharray: 6 6;
+  animation: chemicalBondFlow 4s linear infinite;
+}
+
+.animate-screen-bubble {
+  animation: screenEffervescence var(--bubble-duration, 16s) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  animation-delay: var(--bubble-delay, 0s);
+}
+
+/* تعطيل الحركات لمن يفضل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .breathing-glow {
+    animation: none !important;
+  }
+  .animate-bubble, .animate-screen-bubble {
+    display: none !important;
+  }
+  .smoke-cloud-1, .smoke-cloud-2, .animate-live-dot,
+  .animate-molecule-1, .animate-molecule-2, .animate-molecule-3,
+  .animate-orbital, .animate-orbital-rev, .animate-bond-flow {
+    animation: none !important;
+  }
 }

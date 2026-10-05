@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# صفحة إطلاق تطبيق "الوليد" (Al-Waleed App Launch Teaser)
 
-## Getting Started
+صفحة هبوط تشويقية وتنازلية احترافية مبنية خصيصاً لتناسب التصفح عبر الهواتف الذكية (Mobile-First) من خلال مسح رمز الاستجابة السريعة (QR Code).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🎨 الهوية البصرية ونظام الألوان (Brand Palette)
+
+تم بناء التصميم بالاعتماد الحصري والصارم على ألوان الهوية المحددة دون استخدام تدرجات نيون أو ألوان عشوائية:
+* **الأخضر الداكن (Off-Road Green):** `#023A22` (الخلفية الرئيسية لإضفاء عمق وفخامة).
+* **الساج الناعم (Soft Sage):** `#ABC8A3` (النصوص الثانوية، الفواصل الدقيقة، والشبكة الجزيئية).
+* **الرمال الذهبية (Golden Sand):** `#F0E295` (أرقام العداد الضخمة، العناوين، وأزرار الدعوة للإجراء).
+* **الأزرق المحيطي (Ocean Blue):** `#28729F` (لمسات وتفاصيل كيميائية دقيقة تحاكي سائل الدورق).
+
+---
+
+## ⚙️ التعديل وتخصيص البيانات (Configuration)
+
+جميع بيانات الصفحة (موعد الإطلاق، روابط التحميل، النصوص، ورابط الواتساب) موجودة في ملف موحد وسهل التعديل:
+📁 **[`config/launch.ts`](./config/launch.ts)**
+
+### 1. تعديل موعد الإطلاق:
+قم بتغيير قيمة `launchDate` بصيغة ISO 8601 القياسية:
+```typescript
+// مثال: الإطلاق في 15 نوفمبر 2026 الساعة 8:00 مساءً بتوقيت الرياض (+03:00)
+launchDate: "2026-11-15T20:00:00+03:00",
+```
+* **تنبيه:** عند بلوغ هذا الموعد (أو تجاوزه)، يتحول العداد تلقائيًا وبنعومة إلى حالة **"التطبيق متاح الآن"** وتظهر أزرار تحميل App Store و Google Play.
+
+### 2. تعديل روابط المتاجر:
+```typescript
+storeLinks: {
+  appStore: "https://apps.apple.com/app/alwaleed/idXXXXXXXXXX",
+  googlePlay: "https://play.google.com/store/apps/details?id=com.alwaleed.app",
+},
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. تعديل زر التنبيه المسبق (WhatsApp):
+```typescript
+notification: {
+  enabled: true,
+  buttonText: "نبّهني عند الإطلاق",
+  whatsappUrl: "https://wa.me/966500000000?text=...",
+},
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📱 صفحة وتوليد رمز الاستجابة السريعة (QR Code)
 
-## Learn More
+يتضمن المشروع مساراً مخصصاً لرمز الـ QR:
+🔗 **`/qr`** (مثال محليًا: `http://localhost:3000/qr`)
 
-To learn more about Next.js, take a look at the following resources:
+تتيح هذه الصفحة:
+1. معاينة رمز الـ QR فائق الدقة والمصمم بألوان الهوية.
+2. تنزيل الرمز كصورة PNG عالية الدقة (1024×1024) جاهزة للطباعة على البروشورات والملصقات.
+3. طباعة فورية لملصق الحملة.
+4. إمكانية تجربة أي رابط آخر فورياً.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### لتوليد الرمز برمجياً عبر الطرفية (CLI):
+```bash
+npx qrcode "https://alwaleed.app" -o public/alwaleed-qr.png -w 1024 --color-dark "#023A22" --color-light "#F0E295"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠️ التقنيات المستخدمة (Tech Stack)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* **الإطار البرمجي:** Next.js (App Router) + React 19 + TypeScript.
+* **التنسيق:** Tailwind CSS + CSS Custom Variables.
+* **الخطوط:** `Changa` (للعناوين والأرقام المشرقية ٠١٢٣٤٥٦٧٨٩) + `IBM Plex Sans Arabic` (للمتن) عبر `next/font`.
+* **الحركات:** Framer Motion (تأثير الشفافية وإزالة الضباب للوح الزجاجي، تصاعد فقاعات الدورق، وحركات تقليب الأرقام).
+* **الأداء وSEO:** صور محسنة (WebP)، ومنع كامل لتعارضات الـ Hydration.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🚀 تشغيل المشروع محلياً
+
+```bash
+# تثبيت الاعتماديات
+npm install
+
+# تشغيل بيئة التطوير
+npm run dev
+
+# فحص البناء النهائي
+npm run build
+```
+تصفح الصفحة عبر: `http://localhost:3000`
+صفحة الـ QR عبر: `http://localhost:3000/qr`
