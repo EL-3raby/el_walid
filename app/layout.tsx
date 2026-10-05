@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Changa, IBM_Plex_Sans_Arabic, Unbounded } from "next/font/google";
+import { Cairo, IBM_Plex_Sans_Arabic, Unbounded } from "next/font/google";
 import { launchConfig } from "@/config/launch";
 import "./globals.css";
 
-const displayFont = Changa({
+// خط العناوين الحماسي المختار: Cairo Black 900
+const displayFont = Cairo({
   variable: "--font-display",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "600", "700", "800"],
+  subsets: ["arabic"],
+  weight: ["700", "800", "900"],
   display: "swap",
 });
 

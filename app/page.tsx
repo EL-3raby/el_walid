@@ -32,14 +32,14 @@ export default function LandingPage() {
           <HeroLogo appName={launchConfig.appName} isLaunched={isLaunched} />
         </motion.section>
 
-        {/* 2. الشعار اللفظي (Tagline) بلون الرمال الذهبية Golden Sand */}
+        {/* 2. الشعار اللفظي (Tagline) بخط Cairo Black 900 الحماسي بحجم عملاق وتوهج نبضي */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-1.5 sm:mb-2"
+          className="text-center mb-3 sm:mb-5 px-2 w-full"
         >
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#F0E295] tracking-tight font-display drop-shadow-[0_2px_8px_rgba(240,226,149,0.2)]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black font-display tracking-tight leading-tight sm:leading-snug golden-heading-gradient drop-shadow-[0_4px_24px_rgba(240,226,149,0.35)] select-none hype-pulse-glow">
             {launchConfig.tagline}
           </h1>
         </motion.div>
@@ -77,7 +77,7 @@ export default function LandingPage() {
           {launchConfig.description}
         </motion.p>
 
-        {/* 5. توقيع الشركة المطورة (FAMEX) بتصميم بريميوم فخم */}
+        {/* 6. توقيع الشركة المطورة (FAMEX) بتصميم بريميوم فخم */}
         {launchConfig.company && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}

@@ -6,7 +6,7 @@
   --color-ocean-blue: #28729F;
   --color-golden-sand: #F0E295;
   
-  --font-display: var(--font-display, "Changa", sans-serif);
+  --font-display: var(--font-display, "Cairo", sans-serif);
   --font-body: var(--font-body, "IBM Plex Sans Arabic", sans-serif);
   --font-digits: var(--font-digits, "Unbounded", sans-serif);
 }
@@ -99,10 +99,36 @@ body {
   filter: drop-shadow(0 2px 12px rgba(240, 226, 149, 0.3));
 }
 
+/* تدرج العناوين الذهبية الملكية الفخمة */
+.golden-heading-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8D0 32%, #F0E295 78%, #D4C365 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* خط الأرقام الإنجليزية الفخم */
 .font-digits {
   font-family: var(--font-digits), "Unbounded", system-ui, sans-serif;
   font-feature-settings: "tnum" 1;
+}
+
+/* خط العناوين الحماسي المعتمد: Cairo */
+.font-display {
+  font-family: var(--font-display), "Cairo", system-ui, sans-serif;
+}
+
+/* توهج نبضي حماسي مشع للعنوان */
+@keyframes hypeEnergyPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(240, 226, 149, 0.25)) drop-shadow(0 0 28px rgba(40, 114, 159, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(240, 226, 149, 0.55)) drop-shadow(0 0 45px rgba(240, 226, 149, 0.35));
+  }
+}
+
+.hype-pulse-glow {
+  animation: hypeEnergyPulse 3s ease-in-out infinite;
 }
 
 /* توهج تنفسي ذهبي خافت */
