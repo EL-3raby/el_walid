@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { launchConfig } from "@/config/launch";
@@ -11,9 +11,43 @@ import { Countdown } from "@/components/Countdown";
 import { LaunchedState } from "@/components/LaunchedState";
 
 export default function LandingPage() {
+  const [dynamicConfig, setDynamicConfig] = useState({
+    launchDate: launchConfig.launchDate,
+    googlePlay: launchConfig.storeLinks.googlePlay,
+    appStore: launchConfig.storeLinks.appStore,
+    forceLaunched: false,
+    tagline: launchConfig.tagline,
+    description: launchConfig.description,
+  });
+
+  useEffect(() => {
+    // 1. استرجاع سريع وفوري من الذاكرة المحلية لتفادي أي تأخير
+    try {
+      const cached = localStorage.getItem("alwaleed_launch_config");
+      if (cached) {
+        setDynamicConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
+      }
+    } catch (_) {}
+
+    // 2. مزامنة مباشرة مع الخادم لجلب أي تحديث تم حفظه من لوحة التحكم
+    fetch("/api/launch-config", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.config) {
+          setDynamicConfig((prev) => ({ ...prev, ...data.config }));
+          try {
+            localStorage.setItem("alwaleed_launch_config", JSON.stringify(data.config));
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.error("Error syncing launch config:", err));
+  }, []);
+
   const { days, hours, minutes, seconds, isLaunched, isHydrated } = useCountdown(
-    launchConfig.launchDate
+    dynamicConfig.launchDate
   );
+
+  const showLaunchedState = dynamicConfig.forceLaunched || isLaunched;
 
   return (
     <main className="relative min-h-[100dvh] flex flex-col justify-center items-center overflow-x-hidden bg-[#023A22] py-4 sm:py-10 px-3 sm:px-6">
@@ -29,20 +63,22 @@ export default function LandingPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="w-full flex justify-center mb-4 sm:mb-6"
         >
-          <HeroLogo appName={launchConfig.appName} isLaunched={isLaunched} />
+          <HeroLogo appName={launchConfig.appName} isLaunched={showLaunchedState} />
         </motion.section>
 
-        {/* 2. الشعار اللفظي (Tagline) بخط Cairo Black 900 الحماسي بحجم عملاق وتوهج نبضي */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-3 sm:mb-5 px-2 w-full"
-        >
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black font-display tracking-tight leading-tight sm:leading-snug golden-heading-gradient drop-shadow-[0_4px_24px_rgba(240,226,149,0.35)] select-none hype-pulse-glow">
-            {launchConfig.tagline}
-          </h1>
-        </motion.div>
+        {/* 2. الشعار اللفظي (Tagline) يظهر فقط أثناء فترة العد التنازلي ويختفي فور انتهاء العداد */}
+        {!showLaunchedState && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center mb-3 sm:mb-5 px-2 w-full"
+          >
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black font-display tracking-tight leading-tight sm:leading-snug golden-heading-gradient drop-shadow-[0_4px_24px_rgba(240,226,149,0.35)] select-none hype-pulse-glow">
+              {dynamicConfig.tagline || launchConfig.tagline}
+            </h1>
+          </motion.div>
+        )}
 
         {/* 3. العداد التنازلي أو حالة التطبيق متاح الآن عند بلوغ الصفر */}
         <motion.div
@@ -51,10 +87,10 @@ export default function LandingPage() {
           transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
-          {isLaunched ? (
+          {showLaunchedState ? (
             <LaunchedState
-              appStoreUrl={launchConfig.storeLinks.appStore}
-              googlePlayUrl={launchConfig.storeLinks.googlePlay}
+              appStoreUrl={dynamicConfig.appStore || launchConfig.storeLinks.appStore}
+              googlePlayUrl={dynamicConfig.googlePlay || launchConfig.storeLinks.googlePlay}
             />
           ) : (
             <Countdown
@@ -67,15 +103,17 @@ export default function LandingPage() {
           )}
         </motion.div>
 
-        {/* 4. الوصف التوضيحي المقتضب للتطبيق (من سطر واحد) */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center text-sm sm:text-base text-[#ABC8A3]/90 max-w-lg mx-auto font-light leading-relaxed px-3"
-        >
-          {launchConfig.description}
-        </motion.p>
+        {/* 4. الوصف التوضيحي المقتضب للتطبيق (يظهر فقط أثناء فترة العد التنازلي) */}
+        {!showLaunchedState && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center text-sm sm:text-base text-[#ABC8A3]/90 max-w-lg mx-auto font-light leading-relaxed px-3"
+          >
+            {dynamicConfig.description || launchConfig.description}
+          </motion.p>
+        )}
 
         {/* 6. توقيع الشركة المطورة (FAMEX) بتصميم بريميوم فخم */}
         {launchConfig.company && (

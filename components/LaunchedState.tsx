@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
 
+import { GooglePlayLogo } from "./GooglePlayLogo";
+
 interface LaunchedStateProps {
   appStoreUrl: string;
   googlePlayUrl: string;
@@ -53,7 +55,7 @@ export function LaunchedState({ appStoreUrl, googlePlayUrl }: LaunchedStateProps
       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ABC8A3]/30 bg-[#023A22]/80 backdrop-blur-sm mb-4">
         <span className="w-2.5 h-2.5 rounded-full bg-[#F0E295] animate-pulse" />
         <span className="text-xs sm:text-sm text-[#F0E295] font-semibold">
-          التطبيق نزل خلاص! 🔥
+          التطبيق نزل خلاص!
         </span>
       </div>
 
@@ -94,13 +96,7 @@ export function LaunchedState({ appStoreUrl, googlePlayUrl }: LaunchedStateProps
           rel="noopener noreferrer"
           className="group relative flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl border border-[#ABC8A3]/40 bg-[#023A22] text-[#F0E295] font-semibold transition-all duration-300 hover:border-[#F0E295] hover:bg-[#03492b] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5)] active:scale-[0.98]"
         >
-          <svg
-            className="w-5 h-5 fill-current shrink-0"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M3.609 1.814L13.792 12 3.61 22.186c-.365-.327-.61-.83-.61-1.428V3.242c0-.598.245-1.101.609-1.428zm11.306 11.309L4.544 2.752l12.433 7.08-2.062 3.291zm0-2.246l2.062 3.291-12.433 7.08 10.371-10.371zm1.208 1.123l3.528 2.01c1.082.617 1.082 1.625 0 2.242l-3.528 2.01-1.89-3.131 1.89-3.131z" />
-          </svg>
+          <GooglePlayLogo className="w-6 h-6 shrink-0" />
           <div className="flex flex-col text-right leading-tight">
             <span className="text-[10px] font-normal text-[#ABC8A3]/85">متاح على</span>
             <span className="text-sm font-bold tracking-tight">Google Play</span>
