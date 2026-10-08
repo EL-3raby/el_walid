@@ -12,6 +12,8 @@ interface ConfigState {
   launchDate: string;
   googlePlay: string;
   appStore: string;
+  showGooglePlay?: boolean;
+  showAppStore?: boolean;
   forceLaunched: boolean;
   tagline: string;
   description: string;
@@ -64,6 +66,8 @@ export default function AdminPage() {
     launchDate: launchConfig.launchDate,
     googlePlay: launchConfig.storeLinks.googlePlay,
     appStore: launchConfig.storeLinks.appStore,
+    showGooglePlay: true,
+    showAppStore: false,
     forceLaunched: false,
     tagline: launchConfig.tagline,
     description: launchConfig.description,
@@ -99,6 +103,14 @@ export default function AdminPage() {
               launchDate: data.config.launchDate || launchConfig.launchDate,
               googlePlay: data.config.googlePlay || launchConfig.storeLinks.googlePlay,
               appStore: data.config.appStore || launchConfig.storeLinks.appStore,
+              showGooglePlay:
+                data.config.showGooglePlay !== undefined
+                  ? Boolean(data.config.showGooglePlay)
+                  : true,
+              showAppStore:
+                data.config.showAppStore !== undefined
+                  ? Boolean(data.config.showAppStore)
+                  : false,
               forceLaunched: Boolean(data.config.forceLaunched),
               tagline: data.config.tagline || launchConfig.tagline,
               description: data.config.description || launchConfig.description,
@@ -425,8 +437,8 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* 2. قسم روابط التحميل بعد انتهاء العد التنازلي (Google Play & App Store) */}
-          <div className="p-6 rounded-2xl bg-[#023A22]/90 border border-[#ABC8A3]/25 backdrop-blur-md shadow-xl flex flex-col gap-5">
+          {/* 2. قسم روابط التحميل بعد انتهاء العد التنازلي مع أزرار الإظهار والإخفاء */}
+          <div className="p-6 rounded-2xl bg-[#023A22]/90 border border-[#ABC8A3]/25 backdrop-blur-md shadow-xl flex flex-col gap-6">
             <div className="flex items-center justify-between border-b border-[#ABC8A3]/15 pb-3">
               <div className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-sm">
@@ -434,90 +446,160 @@ export default function AdminPage() {
                 </span>
                 <div>
                   <h2 className="text-lg font-bold text-[#F0E295]">
-                    روابط تحميل التطبيق بعد انتهاء العد
+                    روابط تحميل التطبيق والتحكم في ظهورها
                   </h2>
                   <p className="text-xs text-[#ABC8A3]/75">
-                    الروابط التي سيتم توجيه الزوار إليها بمجرد انتهاء العداد واكتمال الإطلاق
+                    يمكنك تفعيل أو إخفاء أي زر (Google Play أو App Store) بنقرة زر واحدة
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* حقل رابط Google Play (المطلوب الرئيسي) */}
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center justify-between text-xs font-bold text-[#F0E295]">
-                <span className="flex items-center gap-2">
-                  <GooglePlayLogo className="w-4 h-4 shrink-0" />
-                  رابط متجر جوجل بلاي (Google Play URL):
-                </span>
-                {config.googlePlay && (
-                  <a
-                    href={config.googlePlay}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-[#F0E295] hover:underline flex items-center gap-1"
-                  >
-                    <span>اختبار الرابط</span>
-                    <svg className="w-3 h-3 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </a>
-                )}
-              </label>
-              <div className="relative">
+            {/* بطاقة التحكم في زر Google Play */}
+            <div className={`p-4 rounded-xl border transition-all duration-300 flex flex-col gap-3.5 ${
+              config.showGooglePlay !== false
+                ? "bg-[#012616] border-[#ABC8A3]/30"
+                : "bg-[#011e11]/60 border-[#ABC8A3]/15 opacity-70"
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <GooglePlayLogo className="w-5 h-5 shrink-0" />
+                  <div>
+                    <span className="text-sm font-bold text-[#F0E295] block">
+                      متجر Google Play
+                    </span>
+                    <span className="text-[11px] text-[#ABC8A3]/75">
+                      {config.showGooglePlay !== false ? "🟢 ظاهر للزوار في الصفحة الرئيسية" : "⚪ مخفي حالياً من الصفحة الرئيسية"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* مفتاح Toggle لزر Google Play */}
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.showGooglePlay !== false}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, showGooglePlay: e.target.checked }))
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-[#023A22] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 border border-[#ABC8A3]/30"></div>
+                </label>
+              </div>
+
+              {/* حقل الرابط لـ Google Play */}
+              <div className="flex flex-col gap-1.5 pt-1 border-t border-[#ABC8A3]/10">
+                <div className="flex items-center justify-between text-xs font-semibold text-[#ABC8A3]">
+                  <span>رابط التطبيق على Google Play:</span>
+                  {config.googlePlay && config.showGooglePlay !== false && (
+                    <a
+                      href={config.googlePlay}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-[#F0E295] hover:underline flex items-center gap-1"
+                    >
+                      <span>تجربة الرابط</span>
+                      <svg className="w-3 h-3 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
                 <input
                   type="url"
                   placeholder="https://play.google.com/store/apps/details?id=com.alwaleed.app"
                   value={config.googlePlay}
                   onChange={(e) => setConfig((prev) => ({ ...prev, googlePlay: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-[#012616] border border-[#ABC8A3]/35 text-[#F0E295] text-sm focus:outline-none focus:border-[#F0E295] focus:ring-2 focus:ring-[#F0E295]/20 transition-all font-mono dir-ltr text-left"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#023A22]/80 border border-[#ABC8A3]/35 text-[#F0E295] text-sm focus:outline-none focus:border-[#F0E295] transition-all font-mono dir-ltr text-left"
                 />
               </div>
-              <p className="text-[11px] text-[#ABC8A3]/65">
-                💡 بمجرد انتهاء العد التنازلي، عند ضغط المستخدم على زر Google Play سيتم نقله فورًا إلى هذا الرابط.
-              </p>
             </div>
 
-            {/* حقل رابط App Store (Apple) */}
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center justify-between text-xs font-bold text-[#ABC8A3]">
-                <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4 fill-current text-[#F0E295]" viewBox="0 0 24 24">
+            {/* بطاقة التحكم في زر Apple App Store */}
+            <div className={`p-4 rounded-xl border transition-all duration-300 flex flex-col gap-3.5 ${
+              config.showAppStore
+                ? "bg-[#012616] border-[#ABC8A3]/30"
+                : "bg-[#011a0f]/80 border-[#ABC8A3]/15 border-dashed"
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <svg className="w-5 h-5 fill-current text-[#F0E295]" viewBox="0 0 24 24">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.93.04-2.07.62-2.73 1.39-.58.67-1.1 1.77-.96 2.82 1.04.08 2.12-.51 2.75-1.28z" />
                   </svg>
-                  رابط متجر آب ستور (Apple App Store URL):
-                </span>
-                {config.appStore && (
-                  <a
-                    href={config.appStore}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-[#F0E295] hover:underline flex items-center gap-1"
-                  >
-                    <span>اختبار الرابط</span>
-                    <svg className="w-3 h-3 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </a>
+                  <div>
+                    <span className="text-sm font-bold text-[#ABC8A3] block">
+                      متجر Apple App Store
+                    </span>
+                    <span className="text-[11px]">
+                      {config.showAppStore ? (
+                        <span className="text-emerald-400 font-semibold">🟢 ظاهر للزوار</span>
+                      ) : (
+                        <span className="text-amber-300/80 font-medium">🔒 مخفي من الموقع (غير مفعّل حالياً)</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* مفتاح Toggle لزر App Store */}
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(config.showAppStore)}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, showAppStore: e.target.checked }))
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-[#023A22] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 border border-[#ABC8A3]/30"></div>
+                </label>
+              </div>
+
+              {/* حقل الرابط لـ App Store */}
+              <div className="flex flex-col gap-1.5 pt-1 border-t border-[#ABC8A3]/10">
+                <div className="flex items-center justify-between text-xs font-semibold text-[#ABC8A3]">
+                  <span>رابط التطبيق على App Store:</span>
+                  {config.appStore && config.showAppStore && (
+                    <a
+                      href={config.appStore}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-[#F0E295] hover:underline flex items-center gap-1"
+                    >
+                      <span>تجربة الرابط</span>
+                      <svg className="w-3 h-3 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  placeholder="https://apps.apple.com/app/alwaleed/id0000000000"
+                  value={config.appStore}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, appStore: e.target.value }))}
+                  className={`w-full px-4 py-2.5 rounded-xl bg-[#023A22]/80 border text-sm focus:outline-none transition-all font-mono dir-ltr text-left ${
+                    config.showAppStore
+                      ? "border-[#ABC8A3]/35 text-[#F0E295] focus:border-[#F0E295]"
+                      : "border-[#ABC8A3]/20 text-[#ABC8A3]/50 opacity-60"
+                  }`}
+                />
+                {!config.showAppStore && (
+                  <p className="text-[11px] text-amber-300/70">
+                    💡 هذا الزر مخفي تماماً ولن يظهر في الصفحة الرئيسية للزوار حتى تقوم بتشغيل المفتاح أعلاه.
+                  </p>
                 )}
-              </label>
-              <input
-                type="url"
-                placeholder="https://apps.apple.com/app/alwaleed/id0000000000"
-                value={config.appStore}
-                onChange={(e) => setConfig((prev) => ({ ...prev, appStore: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-[#012616] border border-[#ABC8A3]/35 text-[#F0E295] text-sm focus:outline-none focus:border-[#F0E295] focus:ring-2 focus:ring-[#F0E295]/20 transition-all font-mono dir-ltr text-left"
-              />
+              </div>
             </div>
 
             {/* مفتاح التفعيل الإجباري الفوري (Force Launch Mode) */}
-            <div className="mt-2 p-4 rounded-xl bg-[#012616]/80 border border-[#ABC8A3]/20 flex items-center justify-between gap-4">
+            <div className="p-4 rounded-xl bg-[#012616]/80 border border-[#ABC8A3]/20 flex items-center justify-between gap-4">
               <div className="flex flex-col">
                 <span className="text-xs sm:text-sm font-bold text-[#F0E295]">
                   🚀 تفعيل حالة الإطلاق يدويًا فورًا (تجاوز العداد)
                 </span>
                 <span className="text-[11px] text-[#ABC8A3]/70">
-                  عند تفعيل هذا الخيار، ستظهر شاشة الروابط والمتاجر في الصفحة الرئيسية فورًا حتى لو كان موعد العداد في المستقبل.
+                  عند تفعيل هذا الخيار، ستظهر أزرار التحميل في الصفحة الرئيسية فورًا حتى لو كان موعد العداد في المستقبل.
                 </span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -602,36 +684,68 @@ export default function AdminPage() {
                 تقدر تنزّل تطبيق الوليد حالًا وتبدأ تستكشف الميزات كلها وتعيش التجربة بنفسك.
               </p>
 
-              {/* أزرار التحميل في المعاينة */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-sm">
-                <a
-                  href={config.appStore || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    if (!config.appStore) e.preventDefault();
-                  }}
-                  className="flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#F0E295] text-[#023A22] font-bold text-xs transition-transform hover:scale-102"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.93.04-2.07.62-2.73 1.39-.58.67-1.1 1.77-.96 2.82 1.04.08 2.12-.51 2.75-1.28z" />
-                  </svg>
-                  <span>App Store</span>
-                </a>
+              {/* أزرار التحميل في المعاينة حسب تفعيلها */}
+              {Boolean(config.showGooglePlay !== false && config.showAppStore) ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-sm">
+                  {config.showGooglePlay !== false && (
+                    <a
+                      href={config.googlePlay || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-[#ABC8A3]/40 bg-[#023A22] text-[#F0E295] font-bold text-xs"
+                    >
+                      <GooglePlayLogo className="w-4 h-4 shrink-0" />
+                      <span>Google Play</span>
+                    </a>
+                  )}
 
-                <a
-                  href={config.googlePlay || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    if (!config.googlePlay) e.preventDefault();
-                  }}
-                  className="flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-[#ABC8A3]/40 bg-[#023A22] text-[#F0E295] font-bold text-xs transition-transform hover:scale-102"
-                >
-                  <GooglePlayLogo className="w-4 h-4 shrink-0" />
-                  <span>Google Play</span>
-                </a>
-              </div>
+                  {config.showAppStore && (
+                    <a
+                      href={config.appStore || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#F0E295] text-[#023A22] font-bold text-xs"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.93.04-2.07.62-2.73 1.39-.58.67-1.1 1.77-.96 2.82 1.04.08 2.12-.51 2.75-1.28z" />
+                      </svg>
+                      <span>App Store</span>
+                    </a>
+                  )}
+                </div>
+              ) : (config.showGooglePlay !== false || config.showAppStore) ? (
+                <div className="w-full max-w-xs flex justify-center">
+                  {config.showGooglePlay !== false && (
+                    <a
+                      href={config.googlePlay || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl border border-[#F0E295] bg-[#023A22] text-[#F0E295] font-bold text-xs shadow-md"
+                    >
+                      <GooglePlayLogo className="w-5 h-5 shrink-0" />
+                      <span>حمّل الآن من Google Play</span>
+                    </a>
+                  )}
+
+                  {config.showAppStore && (
+                    <a
+                      href={config.appStore || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#F0E295] text-[#023A22] font-bold text-xs shadow-md"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.93.04-2.07.62-2.73 1.39-.58.67-1.1 1.77-.96 2.82 1.04.08 2.12-.51 2.75-1.28z" />
+                      </svg>
+                      <span>نزّله الآن من App Store</span>
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="px-4 py-2 rounded-full bg-[#012616] text-[11px] text-[#ABC8A3]/70 border border-[#ABC8A3]/20">
+                  ⚠️ كلا الزرين مخفيان حالياً
+                </div>
+              )}
             </div>
           </div>
 

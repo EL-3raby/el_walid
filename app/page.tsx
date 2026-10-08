@@ -15,6 +15,8 @@ export default function LandingPage() {
     launchDate: launchConfig.launchDate,
     googlePlay: launchConfig.storeLinks.googlePlay,
     appStore: launchConfig.storeLinks.appStore,
+    showGooglePlay: true,
+    showAppStore: false,
     forceLaunched: false,
     tagline: launchConfig.tagline,
     description: launchConfig.description,
@@ -91,6 +93,8 @@ export default function LandingPage() {
             <LaunchedState
               appStoreUrl={dynamicConfig.appStore || launchConfig.storeLinks.appStore}
               googlePlayUrl={dynamicConfig.googlePlay || launchConfig.storeLinks.googlePlay}
+              showAppStore={dynamicConfig.showAppStore ?? false}
+              showGooglePlay={dynamicConfig.showGooglePlay ?? true}
             />
           ) : (
             <Countdown

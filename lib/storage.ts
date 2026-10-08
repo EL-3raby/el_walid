@@ -6,6 +6,8 @@ export interface DynamicLaunchConfig {
   launchDate: string;
   googlePlay: string;
   appStore: string;
+  showGooglePlay?: boolean;
+  showAppStore?: boolean;
   forceLaunched: boolean;
   tagline: string;
   description: string;
@@ -48,6 +50,8 @@ export function getDefaultConfig(): DynamicLaunchConfig {
     launchDate: launchConfig.launchDate,
     googlePlay: launchConfig.storeLinks.googlePlay,
     appStore: launchConfig.storeLinks.appStore,
+    showGooglePlay: true,
+    showAppStore: false, // افتراضياً غير مفعل حسب رغبة المستخدم
     forceLaunched: false,
     tagline: launchConfig.tagline,
     description: launchConfig.description,
