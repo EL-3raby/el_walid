@@ -50,10 +50,39 @@ async function getFromBlob(): Promise<DynamicLaunchConfig | null> {
   if (!HAS_BLOB) return null;
 
   try {
+    const { get } = await import("@vercel/blob");
+    // تجربة القراءة كـ private أولاً لأن المتجر من نوع Private
+    let blobRes = null;
+    try {
+      blobRes = await get("launch-config.json", { access: "private" });
+    } catch {
+      try {
+        blobRes = await get("launch-config.json", { access: "public" });
+      } catch {}
+    }
+
+    if (blobRes && blobRes.statusCode === 200 && blobRes.stream) {
+      const text = await new Response(blobRes.stream).text();
+      const data = JSON.parse(text);
+      return {
+        ...getDefaultConfig(),
+        ...data,
+      };
+    }
+  } catch (error) {
+    console.warn("Notice: get() from Vercel Blob returned empty or failed:", error);
+  }
+
+  // محاولة بديلة عبر list
+  try {
     const { list } = await import("@vercel/blob");
     const { blobs } = await list({ prefix: "launch-config.json", limit: 1 });
     if (blobs && blobs.length > 0) {
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      const res = await fetch(blobs[0].url, {
+        cache: "no-store",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         return {
@@ -63,7 +92,7 @@ async function getFromBlob(): Promise<DynamicLaunchConfig | null> {
       }
     }
   } catch (error) {
-    console.error("Error reading from Vercel Blob:", error);
+    console.error("Error fallback reading from Vercel Blob:", error);
   }
 
   return null;
@@ -75,16 +104,32 @@ async function getFromBlob(): Promise<DynamicLaunchConfig | null> {
 async function saveToBlob(config: DynamicLaunchConfig): Promise<boolean> {
   if (!HAS_BLOB) return false;
 
+  const content = JSON.stringify(config, null, 2);
+
+  // 1. تجربة الحفظ كـ private (المتجر منشأ كـ Private على Vercel)
   try {
     const { put } = await import("@vercel/blob");
-    await put("launch-config.json", JSON.stringify(config, null, 2), {
-      access: "public",
+    await put("launch-config.json", content, {
+      access: "private",
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
     return true;
-  } catch (error) {
-    console.error("Error saving to Vercel Blob:", error);
-    return false;
+  } catch (errPrivate) {
+    console.warn("Private put attempt error, attempting public fallback:", errPrivate);
+    // 2. تجربة public كبديل
+    try {
+      const { put } = await import("@vercel/blob");
+      await put("launch-config.json", content, {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+      return true;
+    } catch (errPublic) {
+      console.error("Error saving to Vercel Blob:", errPublic);
+      return false;
+    }
   }
 }
 
