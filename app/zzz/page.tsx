@@ -72,6 +72,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [hasCloudStorage, setHasCloudStorage] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
@@ -90,6 +91,9 @@ export default function AdminPage() {
         const res = await fetch("/api/launch-config", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
+          if (typeof data.hasCloudStorage === "boolean") {
+            setHasCloudStorage(data.hasCloudStorage);
+          }
           if (data.config) {
             setConfig({
               launchDate: data.config.launchDate || launchConfig.launchDate,
@@ -217,6 +221,35 @@ export default function AdminPage() {
             </Link>
           </div>
         </header>
+
+        {/* تنبيه حالة التخزين السحابي على Vercel */}
+        {hasCloudStorage === true ? (
+          <div className="p-4 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs sm:text-sm flex items-center gap-3">
+            <span className="text-base">🟢</span>
+            <div>
+              <span className="font-bold">التخزين السحابي متصل بنجاح (Vercel KV): </span>
+              <span>أي تعديل تحفظه الآن سيُحفظ سحابياً ويظهر فوراً لجميع زوار موقعك على Vercel!</span>
+            </div>
+          </div>
+        ) : hasCloudStorage === false ? (
+          <div className="p-4 rounded-2xl bg-[#012616] border border-[#F0E295]/40 text-[#ABC8A3] text-xs sm:text-sm flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-[#F0E295] font-bold">
+              <span className="text-base">💡</span>
+              <span>تنبيه هام للنشر على Vercel:</span>
+            </div>
+            <p className="leading-relaxed text-xs sm:text-sm text-[#ABC8A3]/90">
+              سيرفرات Vercel السحابية (Serverless) نظام ملفاتها للقراءة فقط، ولذلك لا يمكن حفظ الملفات محلياً على السيرفر كجهازك الشخصي.
+              <br />
+              <strong className="text-[#F0E295]">لكي تُحفظ التعديلات سحابياً وتظهر لجميع الزوار على Vercel:</strong>
+              <br />
+              1. افتح مشروعك على موقع <strong>Vercel</strong> ➔ اذهب لتبويب <strong>Storage</strong>.
+              <br />
+              2. اضغط <strong>Create Database</strong> واختر <strong>KV</strong> أو <strong>Upstash Redis</strong> (مجاني 100%) ثم اضغط <strong>Connect</strong>.
+              <br />
+              <span className="text-emerald-400 font-semibold">بمجرد ربطه، سيتعرف عليه الكود تلقائياً فوراً وستعمل صفحة التحكم سحابياً لجميع الزوار!</span>
+            </p>
+          </div>
+        ) : null}
 
         {/* كارت الحالة الحالية الحية للعداد (Live Status Badge) */}
         <section className="p-5 rounded-2xl bg-[#023A22]/80 border border-[#ABC8A3]/25 backdrop-blur-md">
