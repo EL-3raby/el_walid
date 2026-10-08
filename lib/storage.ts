@@ -15,8 +15,15 @@ export interface DynamicLaunchConfig {
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONFIG_FILE = path.join(DATA_DIR, "launch-config.json");
 
-// 1. فحص Vercel Blob
-const HAS_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+// 1. فحص Vercel Blob (يدعم كلاً من OIDC و BLOB_STORE_ID و BLOB_READ_WRITE_TOKEN وبيئة Vercel)
+export function checkHasBlob(): boolean {
+  return Boolean(
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_STORE_ID ||
+    process.env.VERCEL_OIDC_TOKEN ||
+    process.env.VERCEL
+  );
+}
 
 // 2. فحص Vercel KV / Upstash Redis
 const KV_URL =
@@ -29,7 +36,12 @@ const KV_TOKEN =
 
 const HAS_KV = Boolean(KV_URL && KV_TOKEN);
 
-export const hasCloudStorage = Boolean(HAS_BLOB || HAS_KV);
+export const hasCloudStorage = Boolean(
+  process.env.BLOB_READ_WRITE_TOKEN ||
+  process.env.BLOB_STORE_ID ||
+  process.env.VERCEL ||
+  HAS_KV
+);
 
 export function getDefaultConfig(): DynamicLaunchConfig {
   return {
@@ -47,17 +59,17 @@ export function getDefaultConfig(): DynamicLaunchConfig {
  * جلب البيانات من Vercel Blob
  */
 async function getFromBlob(): Promise<DynamicLaunchConfig | null> {
-  if (!HAS_BLOB) return null;
+  if (!checkHasBlob()) return null;
 
   try {
     const { get } = await import("@vercel/blob");
     // تجربة القراءة كـ private أولاً لأن المتجر من نوع Private
     let blobRes = null;
     try {
-      blobRes = await get("launch-config.json", { access: "private" });
+      blobRes = await get("launch-config.json", { access: "private", useCache: false });
     } catch {
       try {
-        blobRes = await get("launch-config.json", { access: "public" });
+        blobRes = await get("launch-config.json", { access: "public", useCache: false });
       } catch {}
     }
 
@@ -101,8 +113,12 @@ async function getFromBlob(): Promise<DynamicLaunchConfig | null> {
 /**
  * حفظ البيانات في Vercel Blob
  */
-async function saveToBlob(config: DynamicLaunchConfig): Promise<boolean> {
-  if (!HAS_BLOB) return false;
+async function saveToBlob(
+  config: DynamicLaunchConfig
+): Promise<{ success: boolean; error?: string }> {
+  if (!checkHasBlob()) {
+    return { success: false, error: "لم يتم العثور على إعدادات متجر Vercel Blob في البيئة" };
+  }
 
   const content = JSON.stringify(config, null, 2);
 
@@ -114,9 +130,11 @@ async function saveToBlob(config: DynamicLaunchConfig): Promise<boolean> {
       addRandomSuffix: false,
       allowOverwrite: true,
     });
-    return true;
-  } catch (errPrivate) {
-    console.warn("Private put attempt error, attempting public fallback:", errPrivate);
+    return { success: true };
+  } catch (errPrivate: unknown) {
+    const privateMsg = errPrivate instanceof Error ? errPrivate.message : String(errPrivate);
+    console.warn("Private put attempt error, attempting public fallback:", privateMsg);
+
     // 2. تجربة public كبديل
     try {
       const { put } = await import("@vercel/blob");
@@ -125,10 +143,11 @@ async function saveToBlob(config: DynamicLaunchConfig): Promise<boolean> {
         addRandomSuffix: false,
         allowOverwrite: true,
       });
-      return true;
-    } catch (errPublic) {
-      console.error("Error saving to Vercel Blob:", errPublic);
-      return false;
+      return { success: true };
+    } catch (errPublic: unknown) {
+      const publicMsg = errPublic instanceof Error ? errPublic.message : String(errPublic);
+      console.error("Error saving to Vercel Blob:", publicMsg);
+      return { success: false, error: `${privateMsg} | ${publicMsg}` };
     }
   }
 }
@@ -203,7 +222,7 @@ async function saveToCloudKV(config: DynamicLaunchConfig): Promise<boolean> {
  */
 export async function getLaunchConfig(): Promise<DynamicLaunchConfig> {
   // 1. فحص Vercel Blob
-  if (HAS_BLOB) {
+  if (checkHasBlob()) {
     const blobData = await getFromBlob();
     if (blobData) return blobData;
   }
@@ -239,7 +258,12 @@ export async function getLaunchConfig(): Promise<DynamicLaunchConfig> {
  */
 export async function saveLaunchConfig(
   updates: Partial<DynamicLaunchConfig>
-): Promise<{ config: DynamicLaunchConfig; savedToCloud: boolean; savedToLocal: boolean }> {
+): Promise<{
+  config: DynamicLaunchConfig;
+  savedToCloud: boolean;
+  savedToLocal: boolean;
+  cloudError?: string;
+}> {
   const current = await getLaunchConfig();
   const updated: DynamicLaunchConfig = {
     ...current,
@@ -249,16 +273,22 @@ export async function saveLaunchConfig(
 
   let savedToCloud = false;
   let savedToLocal = false;
+  let cloudError: string | undefined;
 
   // 1. حفظ في Vercel Blob
-  if (HAS_BLOB) {
-    savedToCloud = await saveToBlob(updated);
+  if (checkHasBlob()) {
+    const blobResult = await saveToBlob(updated);
+    if (blobResult.success) {
+      savedToCloud = true;
+    } else {
+      cloudError = blobResult.error;
+    }
   }
 
   // 2. حفظ في Vercel KV
-  if (HAS_KV) {
+  if (!savedToCloud && HAS_KV) {
     const kvSaved = await saveToCloudKV(updated);
-    savedToCloud = savedToCloud || kvSaved;
+    savedToCloud = kvSaved;
   }
 
   // 3. الحفظ المحلي (للعمل في البيئة المحلية)
@@ -280,5 +310,7 @@ export async function saveLaunchConfig(
     config: updated,
     savedToCloud,
     savedToLocal,
+    cloudError,
   };
 }
+

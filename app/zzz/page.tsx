@@ -143,9 +143,22 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setSaveSuccess(true);
-        localStorage.setItem("alwaleed_launch_config", JSON.stringify(config));
-        setTimeout(() => setSaveSuccess(false), 4500);
+        const isLocal =
+          typeof window !== "undefined" &&
+          (window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1");
+
+        if (!isLocal && data.savedToCloud === false) {
+          setErrorMessage(
+            data.cloudError
+              ? `تنبيه: تم الحفظ مؤقتاً لكن فشل الربط مع Vercel Blob: ${data.cloudError}`
+              : "تنبيه: فشل الحفظ في متجر Vercel Blob السحابي."
+          );
+        } else {
+          setSaveSuccess(true);
+          localStorage.setItem("alwaleed_launch_config", JSON.stringify(config));
+          setTimeout(() => setSaveSuccess(false), 4500);
+        }
       } else {
         setErrorMessage(data.error || "حدث خطأ أثناء الحفظ");
       }

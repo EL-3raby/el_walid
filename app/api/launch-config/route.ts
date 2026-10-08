@@ -39,11 +39,14 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: "تم حفظ الإعدادات بنجاح",
+        message: result.savedToCloud
+          ? "تم حفظ الإعدادات سحابياً بنجاح"
+          : "تم حفظ الإعدادات",
         config: result.config,
         hasCloudStorage,
         savedToCloud: result.savedToCloud,
         savedToLocal: result.savedToLocal,
+        cloudError: result.cloudError,
       },
       {
         headers: {
@@ -51,10 +54,11 @@ export async function POST(request: Request) {
         },
       }
     );
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "فشل حفظ التعديلات";
     console.error("POST /api/launch-config error:", error);
     return NextResponse.json(
-      { success: false, error: "فشل حفظ التعديلات", hasCloudStorage },
+      { success: false, error: errorMsg, hasCloudStorage },
       { status: 500 }
     );
   }
