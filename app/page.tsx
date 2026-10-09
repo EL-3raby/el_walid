@@ -43,6 +43,25 @@ export default function LandingPage() {
         }
       })
       .catch((err) => console.error("Error syncing launch config:", err));
+
+    // 3. تسجيل زيارة جديدة في إحصائيات الموقع
+    try {
+      const sessionKey = "alwaleed_tracked_session";
+      if (!sessionStorage.getItem(sessionKey)) {
+        sessionStorage.setItem(sessionKey, "1");
+        fetch("/api/stats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: "pageview" }),
+        }).catch(() => {});
+      }
+    } catch (_) {
+      fetch("/api/stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "pageview" }),
+      }).catch(() => {});
+    }
   }, []);
 
   const { days, hours, minutes, seconds, isLaunched, isHydrated } = useCountdown(

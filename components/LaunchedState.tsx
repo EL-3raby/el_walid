@@ -56,6 +56,17 @@ export function LaunchedState({
   const hasBoth = hasAppStore && hasGooglePlay;
   const hasOnlyOne = (hasAppStore && !hasGooglePlay) || (!hasAppStore && hasGooglePlay);
 
+  const trackClick = (event: "click_google_play" | "click_app_store") => {
+    try {
+      fetch("/api/stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) {}
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -88,6 +99,7 @@ export function LaunchedState({
               href={googlePlayUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("click_google_play")}
               className="group relative flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl border border-[#ABC8A3]/40 bg-[#023A22] text-[#F0E295] font-semibold transition-all duration-300 hover:border-[#F0E295] hover:bg-[#03492b] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5)] active:scale-[0.98]"
             >
               <GooglePlayLogo className="w-6 h-6 shrink-0" />
@@ -104,6 +116,7 @@ export function LaunchedState({
               href={appStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("click_app_store")}
               className="group relative flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-[#F0E295] text-[#023A22] font-semibold transition-all duration-300 hover:bg-[#fff5a8] hover:shadow-[0_8px_20px_-4px_rgba(240,226,149,0.35)] active:scale-[0.98]"
             >
               <svg
@@ -127,6 +140,7 @@ export function LaunchedState({
               href={googlePlayUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("click_google_play")}
               className="w-full group relative flex items-center justify-center gap-3.5 px-6 py-4 rounded-xl border-2 border-[#F0E295]/70 bg-gradient-to-r from-[#012616] via-[#023A22] to-[#012616] text-[#F0E295] font-bold shadow-[0_8px_25px_-6px_rgba(240,226,149,0.3)] transition-all duration-300 hover:border-[#F0E295] hover:scale-[1.02] hover:shadow-[0_12px_30px_-6px_rgba(240,226,149,0.45)] active:scale-[0.98]"
             >
               <GooglePlayLogo className="w-7 h-7 shrink-0" />
@@ -142,6 +156,7 @@ export function LaunchedState({
               href={appStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("click_app_store")}
               className="w-full group relative flex items-center justify-center gap-3.5 px-6 py-4 rounded-xl bg-[#F0E295] text-[#023A22] font-bold shadow-[0_8px_25px_-6px_rgba(240,226,149,0.35)] transition-all duration-300 hover:bg-[#fff5a8] hover:scale-[1.02] hover:shadow-[0_12px_30px_-6px_rgba(240,226,149,0.5)] active:scale-[0.98]"
             >
               <svg

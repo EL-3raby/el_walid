@@ -78,6 +78,13 @@ export default function AdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [hasCloudStorage, setHasCloudStorage] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [stats, setStats] = useState<{
+    totalPageViews: number;
+    googlePlayClicks: number;
+    appStoreClicks: number;
+    lastVisitedAt: string;
+  } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -126,7 +133,49 @@ export default function AdminPage() {
     }
 
     fetchConfig();
+    fetchStats();
   }, []);
+
+  // جلب إحصائيات الزوار
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      const res = await fetch("/api/stats", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.stats) {
+          setStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  // تصفير الإحصائيات
+  const handleResetStats = async () => {
+    if (!window.confirm("هل أنت متأكد من رغبتك في تصفير عداد الزيارات والضغطات؟")) return;
+    try {
+      setStatsLoading(true);
+      const res = await fetch("/api/stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "reset" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.stats) {
+          setStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to reset stats:", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   // تحديث العداد المباشر كل ثانية
   useEffect(() => {
@@ -252,29 +301,122 @@ export default function AdminPage() {
           <div className="p-4 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs sm:text-sm flex items-center gap-3">
             <span className="text-base">🟢</span>
             <div>
-              <span className="font-bold">التخزين السحابي متصل بنجاح (Vercel KV): </span>
-              <span>أي تعديل تحفظه الآن سيُحفظ سحابياً ويظهر فوراً لجميع زوار موقعك على Vercel!</span>
+              <span className="font-bold">التخزين السحابي متصل بنجاح (Vercel Blob): </span>
+              <span>أي تعديل أو إحصائيات زيارات تُحفظ سحابياً فوراً لجميع زوار موقعك!</span>
             </div>
-          </div>
-        ) : hasCloudStorage === false ? (
-          <div className="p-4 rounded-2xl bg-[#012616] border border-[#F0E295]/40 text-[#ABC8A3] text-xs sm:text-sm flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-[#F0E295] font-bold">
-              <span className="text-base">💡</span>
-              <span>تنبيه هام للنشر على Vercel:</span>
-            </div>
-            <p className="leading-relaxed text-xs sm:text-sm text-[#ABC8A3]/90">
-              سيرفرات Vercel السحابية (Serverless) نظام ملفاتها للقراءة فقط، ولذلك لا يمكن حفظ الملفات محلياً على السيرفر كجهازك الشخصي.
-              <br />
-              <strong className="text-[#F0E295]">لكي تُحفظ التعديلات سحابياً وتظهر لجميع الزوار على Vercel:</strong>
-              <br />
-              1. افتح مشروعك على موقع <strong>Vercel</strong> ➔ اذهب لتبويب <strong>Storage</strong>.
-              <br />
-              2. اضغط <strong>Create Database</strong> واختر <strong>KV</strong> أو <strong>Upstash Redis</strong> (مجاني 100%) ثم اضغط <strong>Connect</strong>.
-              <br />
-              <span className="text-emerald-400 font-semibold">بمجرد ربطه، سيتعرف عليه الكود تلقائياً فوراً وستعمل صفحة التحكم سحابياً لجميع الزوار!</span>
-            </p>
           </div>
         ) : null}
+
+        {/* لوحة إحصائيات الزوار والتنزيلات الفورية */}
+        <section className="p-6 rounded-2xl bg-[#023A22]/90 border border-[#ABC8A3]/25 backdrop-blur-md shadow-2xl flex flex-col gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ABC8A3]/15 pb-4">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl bg-[#F0E295]/15 border border-[#F0E295]/30 flex items-center justify-center text-lg">
+                📊
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-[#F0E295]">
+                    إحصائيات زوار الموقع والتفاعل
+                  </h2>
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    مباشر
+                  </span>
+                </div>
+                <p className="text-xs text-[#ABC8A3]/75">
+                  تتبع فوري لعدد الأشخاص الذين زاروا موقعك وضغطوا على روابط التحميل
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={fetchStats}
+                disabled={statsLoading}
+                className="px-3 py-1.5 rounded-lg bg-[#012616] hover:bg-[#033620] border border-[#ABC8A3]/30 hover:border-[#F0E295] text-[#F0E295] text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <svg className={`w-3.5 h-3.5 ${statsLoading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>تحديث الأرقام</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetStats}
+                disabled={statsLoading}
+                className="px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/50 border border-red-500/30 text-red-300 text-xs font-semibold transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="تصفير العداد"
+              >
+                تصفير
+              </button>
+            </div>
+          </div>
+
+          {/* مربعات الأرقام الإحصائية */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* 1. إجمالي الزيارات */}
+            <div className="p-4 rounded-xl bg-[#012616]/90 border border-[#ABC8A3]/25 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#ABC8A3]/80 mb-2">
+                <span className="font-medium">إجمالي الزيارات</span>
+                <span className="text-base">👁️</span>
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-[#F0E295] font-mono tracking-tight">
+                {stats?.totalPageViews !== undefined ? stats.totalPageViews.toLocaleString("ar-EG") : "0"}
+              </div>
+              <span className="text-[10px] text-[#ABC8A3]/60 mt-1">عدد مرات فتح الموقع</span>
+            </div>
+
+            {/* 2. ضغطات Google Play */}
+            <div className="p-4 rounded-xl bg-[#012616]/90 border border-[#ABC8A3]/25 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#ABC8A3]/80 mb-2">
+                <span className="font-medium">ضغطات Google Play</span>
+                <GooglePlayLogo className="w-4 h-4 shrink-0" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-emerald-300 font-mono tracking-tight">
+                {stats?.googlePlayClicks !== undefined ? stats.googlePlayClicks.toLocaleString("ar-EG") : "0"}
+              </div>
+              <span className="text-[10px] text-[#ABC8A3]/60 mt-1">مهتمون بتحميل التطبيق</span>
+            </div>
+
+            {/* 3. ضغطات App Store */}
+            <div className="p-4 rounded-xl bg-[#012616]/90 border border-[#ABC8A3]/25 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#ABC8A3]/80 mb-2">
+                <span className="font-medium">ضغطات App Store</span>
+                <svg className="w-4 h-4 fill-current text-[#F0E295]" viewBox="0 0 24 24">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.93.04-2.07.62-2.73 1.39-.58.67-1.1 1.77-.96 2.82 1.04.08 2.12-.51 2.75-1.28z" />
+                </svg>
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-[#F0E295] font-mono tracking-tight">
+                {stats?.appStoreClicks !== undefined ? stats.appStoreClicks.toLocaleString("ar-EG") : "0"}
+              </div>
+              <span className="text-[10px] text-[#ABC8A3]/60 mt-1">مستخدمو آبل / iOS</span>
+            </div>
+          </div>
+
+          {/* تنبيه تحليلات Vercel Analytics الرسمية */}
+          <div className="p-3.5 rounded-xl bg-[#011e11] border border-[#ABC8A3]/15 text-xs text-[#ABC8A3]/85 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🌐</span>
+              <span>
+                <strong>Vercel Web Analytics مفعّل:</strong> لمعرفة الدول والمدن والأجهزة (أندرويد/آيفون) ومصادر الزيارات (فيسبوك، واتساب.. إلخ).
+              </span>
+            </div>
+            <a
+              href="https://vercel.com/el-3rabys-projects/el-walid/analytics"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[#F0E295] font-bold hover:underline shrink-0 text-xs"
+            >
+              <span>فتح لوحة Vercel Analytics</span>
+              <svg className="w-3 h-3 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        </section>
 
         {/* كارت الحالة الحالية الحية للعداد (Live Status Badge) */}
         <section className="p-5 rounded-2xl bg-[#023A22]/80 border border-[#ABC8A3]/25 backdrop-blur-md">

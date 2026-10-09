@@ -4,8 +4,8 @@
   "appStore": "https://apps.apple.com/app/alwaleed/id0000000000",
   "showGooglePlay": true,
   "showAppStore": false,
-  "forceLaunched": false,
+  "forceLaunched": true,
   "tagline": "العد التنازلي بدأ",
   "description": "مفاجأة تستحق الانتظار",
-  "updatedAt": "2026-10-08T19:19:42.552Z"
+  "updatedAt": "2026-10-08T19:56:27.727Z"
 }

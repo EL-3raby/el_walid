@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic, Unbounded } from "next/font/google";
 import { launchConfig } from "@/config/launch";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 // خط العناوين الحماسي المختار: Cairo Black 900
@@ -85,6 +86,7 @@ export default function RootLayout({
     >
       <body className="bg-[#023A22] text-[#ABC8A3] antialiased selection:bg-[#F0E295] selection:text-[#023A22]">
         {children}
+        <Analytics />
       </body>
     </html>
   );
