@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic, Unbounded } from "next/font/google";
 import { launchConfig } from "@/config/launch";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // خط العناوين الحماسي المختار: Cairo Black 900
